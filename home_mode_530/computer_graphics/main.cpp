@@ -23,6 +23,9 @@ void display (GLFWwindow*window,double currentTime) {
     // now sam gonna change the background 
     float background=std::tan(currentTime)*0.5+0.5;
 
+    // he like to deal with this 
+
+
 
 
 
