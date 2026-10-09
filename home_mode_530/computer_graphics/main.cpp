@@ -3,35 +3,81 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <cmath>
-
+#define numVAOs 3 //new 
 
 using namespace std;
 
+// today we gonna learn shaders 
+// new declaration 
+
+GLuint renderingProgram;
+GLuint vao[numVAOs];
+
+// shader function 
+GLuint createShaderProgram (void) {
+
+    const char *vShaderSource=
+        "#version 430\n"
+        "void main (void) {\n"
+        "gl_Position=vec4(0.0,0.0,0.0,1.0); \n"
+        "}";
+    const char * fShaderSource=
+        "#version 430 \n"
+        "out vec4 color; \n"
+        "void main(void) {\n"
+        "color=vec4 (0.0,0.0,1.0,1.0);}";
+
+    // then first create or initlize the program 
+    GLuint vShader=glCreateShader (GL_VERTEX_SHADER);
+    GLuint fShader=glCreateShader (GL_FRAGMENT_SHADER);
+
+    // Then we get the shader sources 
+    glShaderSource (vShader,1,&vShaderSource,NULL);
+    glShaderSource (fShader,1,&fShaderSource,NULL);
+
+    // then we compile them 
+    glCompileShader (vShader);
+    glCompileShader (fShader);
+
+    // we create the program to attach them to it 
+    GLuint vfProgram=glCreateProgram ();
+
+    // and then we attach the shader to that program and we will return that program 
+    glAttachShader (vfProgram,vShader);
+    glAttachShader (vfProgram,fShader);
+
+    // then links them 
+    glLinkProgram (vfProgram);
+    return vfProgram;
+
+
+} 
+
+
+
+
+
+
 
 // now we gonna need two function right way 
-void init (GLFWwindow *window ) {};
+void init (GLFWwindow *window ) {
+
+     renderingProgram=createShaderProgram();
+    glGenVertexArrays (numVAOs,vao);
+    glBindVertexArray (vao[0]);
+
+
+
+};
 
 // the next one just for dusplaying the window 
 void display (GLFWwindow*window,double currentTime) {
+    glUseProgram(renderingProgram);
+    float pointSize=std::abs(std::log (currentTime)*1000);
+    glPointSize (pointSize);
 
-    // we gonna change how the color gonna change 
-    float greenChannel= std::sin (currentTime)*0.5+0.5;
-    // now we gonna change the red channel 
-    float redChannel= std::tan (currentTime)*0.5+0.5;
-
-    float blueChannel= std::cos (currentTime)*0.5+0.5;
-    // now sam gonna change the background 
-    float background=std::tan(currentTime)*0.5+0.5;
-
-    // he like to deal with this 
-
-
-
-
-
-    glClearColor (redChannel,greenChannel,blueChannel,background);
-    glClear (GL_COLOR_BUFFER_BIT);
-    
+    glDrawArrays(GL_POINTS,0,1);
+        
 
 }
 
@@ -59,10 +105,11 @@ int main  () {
         
 
     }
-init (window);
+
 
    // make this context current 
    glfwMakeContextCurrent (window);
+  
 
    // and then we initliate the glew 
   if (glewInit()!=  GLEW_OK){
@@ -73,7 +120,8 @@ init (window);
 
   } 
   // first i have to make shure the window will refresh with related to 
-  // the screen 
+  // the screen
+   init (window);
   glfwSwapInterval (1);
 
   // NOW WE CAN RUN IT AND SEE IF IT WORKS 
