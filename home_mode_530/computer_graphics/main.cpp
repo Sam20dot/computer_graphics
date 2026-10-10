@@ -1,148 +1,149 @@
-// now we gonna draw the just one window 
-#include <GL/glew.h> // this help us to load the values 
-#include <iostream>
+//now we gonna start from to build the point on the screen 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
-#define numVAOs 3 //new 
+#include <iostream>
 
 using namespace std;
 
-// today we gonna learn shaders 
-// new declaration 
+// we gonna create three function which will be used for diaplay and also for 
+// intilizing the main things 
 
-GLuint renderingProgram;
+// adding shaders 
+#define numVAOs 1
 GLuint vao[numVAOs];
+GLuint renderingProgram;
 
-// shader function 
-GLuint createShaderProgram (void) {
 
-    const char *vShaderSource=
+
+// shader function s
+
+GLuint createShaderProgram () {
+
+    const char * vShaderSource= 
         "#version 430\n"
-        "void main (void) {\n"
-        "gl_Position=vec4(0.0,0.0,0.0,1.0); \n"
-        "}";
+        "void main () \n"
+        "{gl_Position=vec4(0.5,0.5,0.0,0.0);};\n";
     const char * fShaderSource=
         "#version 430 \n"
-        "out vec4 color; \n"
-        "void main(void) {\n"
-        "color=vec4 (0.0,0.0,1.0,1.0);}";
+        "out vec4 color;\n"
+        "void main () \n"
+        "{color=vec4(0.5.0,0.5,0.5,1.0);};";
 
-    // then first create or initlize the program 
-    GLuint vShader=glCreateShader (GL_VERTEX_SHADER);
+    // creating or inilizing an empty variables for the shaders programms 
+    GLuint vShader= glCreateShader(GL_VERTEX_SHADER);
     GLuint fShader=glCreateShader (GL_FRAGMENT_SHADER);
 
-    // Then we get the shader sources 
+    // and then we gonna create 
     glShaderSource (vShader,1,&vShaderSource,NULL);
     glShaderSource (fShader,1,&fShaderSource,NULL);
 
-    // then we compile them 
+    // and then we compiles them 
     glCompileShader (vShader);
     glCompileShader (fShader);
 
-    // we create the program to attach them to it 
-    GLuint vfProgram=glCreateProgram ();
+    // and then now we create the program 
+    GLuint vfProgram= glCreateProgram ();
 
-    // and then we attach the shader to that program and we will return that program 
+    // and then we attach the codes to the program 
     glAttachShader (vfProgram,vShader);
     glAttachShader (vfProgram,fShader);
 
-    // then links them 
+    // link them 
     glLinkProgram (vfProgram);
+
     return vfProgram;
-
-
-} 
-
-
-
-
-
-
-
-// now we gonna need two function right way 
-void init (GLFWwindow *window ) {
-
-     renderingProgram=createShaderProgram();
-    glGenVertexArrays (numVAOs,vao);
-    glBindVertexArray (vao[0]);
-
-
-
-};
-
-// the next one just for dusplaying the window 
-void display (GLFWwindow*window,double currentTime) {
-    glUseProgram(renderingProgram);
-    float pointSize=std::abs(std::log (currentTime)*1000);
-    glPointSize (pointSize);
-
-    glDrawArrays(GL_POINTS,0,1);
-        
-
+    
 }
 
 
-// now we came in main function 
-
-int main  () {
-
-    glfwWindowHint (GLFW_VERSION_MAJOR,4);
-    glfwWindowHint (GLFW_VERSION_MINOR,3);
-    glfwWindowHint (GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
-
-    // THEN INITILATE THAT 
-    if (!glfwInit()){
-
-        exit (EXIT_FAILURE);
+void init (void) {
 
 
-    }
-    // now its time to create the window 
-    GLFWwindow *window=glfwCreateWindow(1200,800,"home_mode",NULL,NULL);
-    if(!window) {
+    // and now in this function we will intilize the shader 
+    renderingProgram=createShaderProgram();
+    glGenVertexArrays(numVAOs,vao);
+
+    // we bind them 
+    glBindVertexArray (vao[0]);
+
+
+};
+void display (GLFWwindow *window , float currentTime) {
+
+   
+ 
+    float backr=std::abs(std::sin(currentTime));
+    float backg= std::abs(std::cos(currentTime));
+    float backb=std::tan(currentTime);
+    float point_size=std::abs(std::sin(currentTime)*100);
+
+
+
+    glClearColor (backg,backg,backb,1.0);
+    glClear (GL_COLOR_BUFFER_BIT);
+      glPointSize (point_size);
+
+      // changing the background 
+
+
+    glUseProgram(renderingProgram);
+    glDrawArrays (GL_POINTS,0,1);
+    
+
+
+}
+// and no we gonna start the main function 
+
+int main (void ) {
+
+    if (!glfwInit ()) {
 
         exit (EXIT_FAILURE);
         
 
     }
+    // set the specification or minimum for openGL 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR,4);
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR,3);
+    glfwWindowHint (GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
+
+    //window craetion 
+
+    GLFWwindow *window = glfwCreateWindow (800,800,"SAM_WINDOW",NULL,NULL);
+    if (!window ) {
+      exit (EXIT_FAILURE);
+    }
+     glfwMakeContextCurrent(window );
+
+    
+    // then intilize the glew 
+    if (glewInit ()==GLEW_OK) {
+
+    }
+    // and make the window context current 
+   
+    // for vertical synchronization 
+    glfwSwapInterval (1);
+    init ( );
 
 
-   // make this context current 
-   glfwMakeContextCurrent (window);
-  
+    while (!glfwWindowShouldClose(window)) {
+        display (window,glfwGetTime());
+        glfwPollEvents ();
 
-   // and then we initliate the glew 
-  if (glewInit()!=  GLEW_OK){
-
-
-      exit(EXIT_FAILURE);
-
-
-  } 
-  // first i have to make shure the window will refresh with related to 
-  // the screen
-   init (window);
-  glfwSwapInterval (1);
-
-  // NOW WE CAN RUN IT AND SEE IF IT WORKS 
-  while (!glfwWindowShouldClose (window)) {
-
-
-      display(window,glfwGetTime ());
-      glfwSwapBuffers (window);
-      glfwPollEvents ();
-
-
-      // now it time to see the magic on the screen;
-      //
+        // then swap the buffer for changing the interface 
+        glfwSwapBuffers (window);
 
 
 
+    }
 
 
-  }
-glfwDestroyWindow  (window);
+glfwDestroyWindow (window);
 glfwTerminate ();
 
 
 }
+
+
