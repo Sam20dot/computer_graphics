@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
-#include <iostream>
+#include "./error_detection/includes/error.h"
 
 using namespace std;
 
@@ -19,16 +19,21 @@ GLuint renderingProgram;
 // shader function s
 
 GLuint createShaderProgram () {
+    GLint vertCompiled;
+    GLint fraCompiled;
+    GLint linked;
+
 
     const char * vShaderSource= 
         "#version 430\n"
         "void main () \n"
-        "{gl_Position=vec4(0.5,0.5,0.0,0.0);};\n";
+        "{gl_Position=vec4(0.5,0.5,0.0,1.0);};\n";
     const char * fShaderSource=
         "#version 430 \n"
         "out vec4 color;\n"
         "void main () \n"
-        "{color=vec4(0.5.0,0.5,0.5,1.0);};";
+        "{if(gl_FragCoord.x <295) color=vec4(0.5,0.5,0.5,1.0);\n"
+        "else color=vec4(1.0,0.4,0.5,1.0);};";
 
     // creating or inilizing an empty variables for the shaders programms 
     GLuint vShader= glCreateShader(GL_VERTEX_SHADER);
@@ -40,7 +45,25 @@ GLuint createShaderProgram () {
 
     // and then we compiles them 
     glCompileShader (vShader);
+    checkOpenGLError ();
+    glGetShaderiv(vShader,GL_COMPILE_STATUS,&vertCompiled);
+    
+    if (vertCompiled!=1) {
+        std::cout << "vertex compilation failed "<<std::endl;
+        printShaderLog (vShader);
+
+
+    }
     glCompileShader (fShader);
+    checkOpenGLError ();
+    glGetShaderiv (fShader,GL_COMPILE_STATUS,&fraCompiled);
+    if (fraCompiled!=1) {
+
+        std::cout <<"fragment compilation failed:"<<std::endl;
+        printShaderLog (fShader);
+
+    }
+
 
     // and then now we create the program 
     GLuint vfProgram= glCreateProgram ();
@@ -51,6 +74,14 @@ GLuint createShaderProgram () {
 
     // link them 
     glLinkProgram (vfProgram);
+    checkOpenGLError ();
+    glGetProgramiv (vfProgram,GL_LINK_STATUS,&linked);
+    if (linked!=1) {
+
+        std::cout << "linking failed :"<<std::endl;
+        printProgramLog (vfProgram);
+
+    }
 
     return vfProgram;
     
